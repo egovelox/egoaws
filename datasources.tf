@@ -40,8 +40,17 @@ resource "aws_instance" "ego_fisdn_server" {
   }
 }
 
+data "aws_eip" "ego_fisdn_server_eip" {
+  public_ip = "${var.ego_elastic_ip}"
+}
+
+resource "aws_eip_association" "ego_fisdn_server_eip_association" {
+  instance_id   = aws_instance.my_instance.id
+  allocation_id = data.aws_eip.my_instance_eip.id
+}
+
 # OUTPUT
-output "aws_instance_public_dns" {
-  value = aws_instance.ego_fisdn_server.public_dns
+output "aws_instance_ip" {
+  value = aws_instance.ego_fisdn_server.public_ip
 }
 
