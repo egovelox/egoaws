@@ -5,7 +5,7 @@ Cloud configs
 
 terraform init
 
-terraform plan -out ./plan
+terraform plan -var-file='variables.tfvars' -out ./plan 
 
 terraform apply "./plan"
 
