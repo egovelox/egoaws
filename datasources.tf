@@ -5,7 +5,7 @@ data "aws_ami" "ego_server_ami" {
 
   filter {
     name   = "name"
-    values = ["al2023-ami-2023.0.20230419.0-kernel-6.1-x86_64"]
+    values = ["amzn2-ami-amd-hvm-2.0.20230515.0-x86_64-gp2"]
   }
 }
 
