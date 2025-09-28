@@ -1,13 +1,13 @@
 # Select an ami
-data "aws_ami" "ego2_server_ami" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-2023.6.20241031.0-kernel-6.1-x86_64"]
-  }
-}
+#data "aws_ami" "ego2_server_ami" {
+#  most_recent = true
+#  owners      = ["amazon"]
+#
+#  filter {
+#    name   = "name"
+#    values = ["al2023-ami-2023.6.20241031.0-kernel-6.1-x86_64"]
+#  }
+#}
 
 # Setup the user-data
 data "template_cloudinit_config" "user-data2" {
@@ -30,22 +30,36 @@ variable "ego2_server_name" {
  default = "secret"
 }
 
-resource "aws_key_pair" "ego_server_auth" {
+variable "ego_ami_id" {
+ default = "secret"
+}
+
+# We removed this resource from terraform managed resources
+# with the command :
+# terraform state rm aws_key_pair.ego_server_auth
+# because we had a problem with state.
+# Instead we replaced this resource with a data ( see below )
+# since the key is already present in AWS.
+#resource "aws_key_pair" "ego_server_auth" {
+#  key_name   = "${var.ego_server_name}_key"
+#  public_key = file("~/.ssh/${var.ego_server_name}_key.pub")
+#}
+
+data "aws_key_pair" "ego_server_auth" {
   key_name   = "${var.ego_server_name}_key"
-  public_key = file("~/.ssh/${var.ego_server_name}_key.pub")
 }
 
 # Setup the instance
 resource "aws_instance" "ego2_server" {
   instance_type          = "t3.micro"
-  ami                    = data.aws_ami.ego2_server_ami.id
+  ami                    = var.ego_ami_id
   vpc_security_group_ids = [aws_security_group.ego_sg.id]
   subnet_id              = aws_subnet.ego_public_subnet.id
-  key_name               = aws_key_pair.ego_server_auth.id
+  key_name               = data.aws_key_pair.ego_server_auth.key_name
   user_data              = data.template_cloudinit_config.user-data2.rendered
 
   root_block_device {  
-    volume_size = 8
+    volume_size = 20
   }
   tags = {
     Name = "${var.ego2_server_name}"
